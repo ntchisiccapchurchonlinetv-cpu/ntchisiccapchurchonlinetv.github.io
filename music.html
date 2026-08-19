@@ -1,86 +1,355 @@
-    <!DOCTYPE html>
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Music - NTCHISI CCAP ONLINE TV</title>
 
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f2f2f2;
+            color: #222;
         }
 
         header {
-            background: #111;
+            background: #075e54;
             color: white;
             text-align: center;
             padding: 25px 15px;
         }
 
+        header h1 {
+            margin: 0;
+        }
+
         .container {
-            max-width: 700px;
-            margin: auto;
-            padding: 20px;
+            width: 92%;
+            max-width: 800px;
+            margin: 25px auto;
         }
 
         .song {
             background: white;
-            padding: 18px;
+            padding: 20px;
             margin-bottom: 18px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .song img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
         }
 
         .song h2 {
+            color: #075e54;
             margin-top: 0;
         }
 
         .artist {
-            color: #777;
+            color: #666;
+            font-weight: bold;
         }
 
-        audio {  
+        .description {
+            line-height: 1.6;
+        }
+
+        audio {
             width: 100%;
-            margin-top: 10px;
+            margin-top: 15px;
+        }
+
+        #status {
+            text-align: center;
+            font-weight: bold;
+            margin: 25px 0;
         }
 
         .back {
             display: inline-block;
             margin-top: 10px;
-            background: #111;
+            background: #075e54;
             color: white;
             padding: 12px 20px;
             text-decoration: none;
             border-radius: 7px;
+            font-weight: bold;
         }
+
     </style>
+
 </head>
 
 <body>
 
 <header>
+
     <h1>🎵 NTCHISI CCAP ONLINE TV</h1>
-    <p>Music</p>
+
+    <p>Gospel Music</p>
+
 </header>
+
 
 <div class="container">
 
-    <div class="song">
-        <h2>My New Song</h2>
-        <p class="artist">NTCHISI CCAP ONLINE TV</p>
+    <p id="status">
+        Loading music...
+    </p>
 
-        <audio controls>
-            <source src="song1.mp3" type="audio/mpeg">
-            Your browser does not support audio.
-        </audio>
-    </div>
+    <div id="musicList"></div>
 
-    <a class="back" href="index.html">← Back to Home</a>
+    <a class="back" href="index.html">
+        ← Back to Home
+    </a>
 
 </div>
 
+
+<script type="module">
+
+    import {
+        initializeApp
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+    import {
+        getFirestore,
+        collection,
+        getDocs
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+    const firebaseConfig = {
+
+        apiKey:
+        "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+
+        authDomain:
+        "ntchisi-ccap-church-online-tv.firebaseapp.com",
+
+        projectId:
+        "ntchisi-ccap-church-online-tv",
+
+        storageBucket:
+        "ntchisi-ccap-church-online-tv.firebasestorage.app",
+
+        messagingSenderId:
+        "432495723011",
+
+        appId:
+        "1:432495723011:web:9ad91aa93e2f44a8e28436",
+
+        measurementId:
+        "G-69WSZSCK2P"
+
+    };
+
+
+    const app =
+        initializeApp(firebaseConfig);
+
+    const db =
+        getFirestore(app);
+
+
+    const musicList =
+        document.getElementById("musicList");
+
+    const status =
+        document.getElementById("status");
+
+
+    async function loadMusic() {
+
+        try {
+
+            const snapshot =
+                await getDocs(
+                    collection(db, "music")
+                );
+
+
+            musicList.innerHTML = "";
+
+
+            if (snapshot.empty) {
+
+                status.textContent =
+                    "🎵 No music available.";
+
+                return;
+
+            }
+
+
+            status.textContent = "";
+
+
+            snapshot.forEach((musicDoc) => {
+
+                const music =
+                    musicDoc.data();
+
+
+                const song =
+                    document.createElement("div");
+
+                song.className =
+                    "song";
+
+
+                // IMAGE
+
+                if (music.imageUrl) {
+
+                    const image =
+                        document.createElement("img");
+
+                    image.src =
+                        music.imageUrl;
+
+                    image.alt =
+                        music.title ||
+                        "Music";
+
+                    image.onerror =
+                        function() {
+
+                            this.style.display =
+                                "none";
+
+                        };
+
+                    song.appendChild(image);
+
+                }
+
+
+                // TITLE
+
+                const title =
+                    document.createElement("h2");
+
+                title.textContent =
+                    music.title ||
+                    "Untitled Song";
+
+                song.appendChild(title);
+
+
+                // ARTIST
+
+                const artist =
+                    document.createElement("p");
+
+                artist.className =
+                    "artist";
+
+                artist.textContent =
+                    "🎤 " +
+                    (music.artist ||
+                    "Unknown Artist");
+
+                song.appendChild(artist);
+
+
+                // DESCRIPTION
+
+                if (music.description) {
+
+                    const description =
+                        document.createElement("p");
+
+                    description.className =
+                        "description";
+
+                    description.textContent =
+                        music.description;
+
+                    song.appendChild(description);
+
+                }
+
+
+                // AUDIO
+
+                if (music.audioUrl) {
+
+                    const audio =
+                        document.createElement("audio");
+
+                    audio.controls = true;
+
+                    audio.preload =
+                        "metadata";
+
+                    audio.src =
+                        music.audioUrl;
+
+                    audio.setAttribute(
+                        "controlsList",
+                        "nodownload"
+                    );
+
+                    song.appendChild(audio);
+
+                } else {
+
+                    const noAudio =
+                        document.createElement("p");
+
+                    noAudio.textContent =
+                        "⚠️ Audio is not available.";
+
+                    noAudio.style.color =
+                        "red";
+
+                    song.appendChild(noAudio);
+
+                }
+
+
+                musicList.appendChild(song);
+
+            });
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            status.textContent =
+                "❌ Failed to load music.";
+
+            status.style.color =
+                "red";
+
+        }
+
+    }
+
+
+    loadMusic();
+
+</script>
+
+
 </body>
+
 </html>
