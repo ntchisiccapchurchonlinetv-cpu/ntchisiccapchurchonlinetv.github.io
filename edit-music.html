@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Music - NTCHISI CCAP ONLINE TV</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+        }
+
+        header {
+            background: #075e54;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 700px;
+            margin: 25px auto;
+        }
+
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 13px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            font-size: 16px;
+        }
+
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            margin-top: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 7px;
+            background: #075e54;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        button:disabled {
+            background: #999;
+        }
+
+        .back {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #075e54;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        #message {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>✏️ Edit Music</h1>
+
+    <p>NTCHISI CCAP ONLINE TV</p>
+
+</header>
+
+
+<div class="container">
+
+    <div class="box">
+
+        <form id="editForm">
+
+            <label>
+                🎵 Song Title
+            </label>
+
+            <input
+                type="text"
+                id="title"
+                required
+            >
+
+
+            <label>
+                🎤 Artist
+            </label>
+
+            <input
+                type="text"
+                id="artist"
+            >
+
+
+            <label>
+                📝 Description
+            </label>
+
+            <textarea
+                id="description"
+            ></textarea>
+
+
+            <label>
+                🖼️ Image URL
+            </label>
+
+            <input
+                type="url"
+                id="imageUrl"
+                placeholder="Paste image URL"
+            >
+
+            <img
+                id="imagePreview"
+                alt="Music image"
+            >
+
+
+            <label>
+                🎧 Audio URL
+            </label>
+
+            <input
+                type="url"
+                id="audioUrl"
+                placeholder="Paste MP3 URL"
+                required
+            >
+
+            <audio
+                id="audioPreview"
+                controls
+                style="display:none;">
+            </audio>
+
+
+            <button
+                type="submit"
+                id="saveButton">
+                💾 Save Changes
+            </button>
+
+        </form>
+
+
+        <p id="message"></p>
+
+
+        <a
+            href="manage-music.html"
+            class="back">
+            ← Back to Manage Music
+        </a>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+    import { initializeApp } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+    import {
+        getAuth,
+        onAuthStateChanged
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+    import {
+        getFirestore,
+        doc,
+        getDoc,
+        updateDoc
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+    const firebaseConfig = {
+
+        apiKey:
+        "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+
+        authDomain:
+        "ntchisi-ccap-church-online-tv.firebaseapp.com",
+
+        projectId:
+        "ntchisi-ccap-church-online-tv",
+
+        storageBucket:
+        "ntchisi-ccap-church-online-tv.firebasestorage.app",
+
+        messagingSenderId:
+        "432495723011",
+
+        appId:
+        "1:432495723011:web:9ad91aa93e2f44a8e28436",
+
+        measurementId:
+        "G-69WSZSCK2P"
+    };
+
+
+    const app =
+        initializeApp(firebaseConfig);
+
+    const auth =
+        getAuth(app);
+
+    const db =
+        getFirestore(app);
+
+
+    // GET MUSIC ID
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const musicId =
+        params.get("id");
+
+
+    const titleInput =
+        document.getElementById("title");
+
+    const artistInput =
+        document.getElementById("artist");
+
+    const descriptionInput =
+        document.getElementById("description");
+
+    const imageUrlInput =
+        document.getElementById("imageUrl");
+
+    const audioUrlInput =
+        document.getElementById("audioUrl");
+
+    const imagePreview =
+        document.getElementById("imagePreview");
+
+    const audioPreview =
+        document.getElementById("audioPreview");
+
+    const message =
+        document.getElementById("message");
+
+    const saveButton =
+        document.getElementById("saveButton");
+
+    const editForm =
+        document.getElementById("editForm");
+
+
+    // CHECK LOGIN
+
+    onAuthStateChanged(auth, (user) => {
+
+        if (!user) {
+
+            window.location.href =
+                "admin.html";
+
+        } else {
+
+            loadMusic();
+
+        }
+
+    });
+
+
+    // LOAD MUSIC
+
+    async function loadMusic() {
+
+        if (!musicId) {
+
+            message.textContent =
+                "❌ Music ID not found.";
+
+            message.style.color =
+                "red";
+
+            saveButton.disabled =
+                true;
+
+            return;
+
+        }
+
+
+        try {
+
+            const musicRef =
+                doc(
+                    db,
+                    "music",
+                    musicId
+                );
+
+
+            const musicSnap =
+                await getDoc(musicRef);
+
+
+            if (!musicSnap.exists()) {
+
+                message.textContent =
+                    "❌ Music not found.";
+
+                message.style.color =
+                    "red";
+
+                saveButton.disabled =
+                    true;
+
+                return;
+
+            }
+
+
+            const music =
+                musicSnap.data();
+
+
+            titleInput.value =
+                music.title || "";
+
+            artistInput.value =
+                music.artist || "";
+
+            descriptionInput.value =
+                music.description || "";
+
+            imageUrlInput.value =
+                music.imageUrl || "";
+
+            audioUrlInput.value =
+                music.audioUrl || "";
+
+
+            showImage(
+                music.imageUrl || ""
+            );
+
+
+            showAudio(
+                music.audioUrl || ""
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            message.textContent =
+                "❌ Failed to load music.";
+
+            message.style.color =
+                "red";
+
+        }
+
+    }
+
+
+    // IMAGE PREVIEW
+
+    function showImage(url) {
+
+        if (!url) {
+
+            imagePreview.style.display =
+                "none";
+
+            imagePreview.src =
+                "";
+
+            return;
+        }
+
+        imagePreview.src =
+            url;
+
+        imagePreview.style.display =
+            "block";
+    }
+
+
+    // AUDIO PREVIEW
+
+    function showAudio(url) {
+
+        if (!url) {
+
+            audioPreview.style.display =
+                "none";
+
+            audioPreview.src =
+                "";
+
+            return;
+        }
+
+        audioPreview.src =
+            url;
+
+        audioPreview.style.display =
+            "block";
+    }
+
+
+    imageUrlInput.addEventListener(
+        "input",
+        () => {
+
+            showImage(
+                imageUrlInput.value.trim()
+            );
+
+        }
+    );
+
+
+    audioUrlInput.addEventListener(
+        "input",
+        () => {
+
+            showAudio(
+                audioUrlInput.value.trim()
+            );
+
+        }
+    );
+
+
+    // SAVE CHANGES
+
+    editForm.addEventListener(
+        "submit",
+        async (e) => {
+
+            e.preventDefault();
+
+
+            const title =
+                titleInput.value.trim();
+
+            const artist =
+                artistInput.value.trim();
+
+            const description =
+                descriptionInput.value.trim();
+
+            const imageUrl =
+                imageUrlInput.value.trim();
+
+            const audioUrl =
+                audioUrlInput.value.trim();
+
+
+            if (!title || !audioUrl) {
+
+                message.textContent =
+                    "❌ Song title and audio URL are required.";
+
+                message.style.color =
+                    "red";
+
+                return;
+            }
+
+
+            saveButton.disabled =
+                true;
+
+            message.textContent =
+                "Saving changes...";
+
+            message.style.color =
+                "#075e54";
+
+
+            try {
+
+                const musicRef =
+                    doc(
+                        db,
+                        "music",
+                        musicId
+                    );
+
+
+                await updateDoc(
+                    musicRef,
+                    {
+                        title: title,
+                        artist: artist,
+                        description: description,
+                        imageUrl: imageUrl,
+                        audioUrl: audioUrl
+                    }
+                );
+
+
+                message.textContent =
+                    "✅ Music updated successfully!";
+
+                message.style.color =
+                    "green";
+
+
+                setTimeout(() => {
+
+                    window.location.href =
+                        "manage-music.html";
+
+                }, 1000);
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                message.textContent =
+                    "❌ Failed to update music.";
+
+                message.style.color =
+                    "red";
+
+                saveButton.disabled =
+                    false;
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+
+  </html>
