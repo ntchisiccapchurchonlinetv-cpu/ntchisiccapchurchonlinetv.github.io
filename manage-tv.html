@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Manage TV - NTCHISI CCAP ONLINE TV</title>
+    <title>Manage Facebook Live - NTCHISI CCAP ONLINE TV</title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
@@ -18,7 +15,6 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f2f2f2;
-            color: #222;
         }
 
         header {
@@ -26,10 +22,6 @@
             color: white;
             text-align: center;
             padding: 25px 15px;
-        }
-
-        header h1 {
-            margin: 0;
         }
 
         .container {
@@ -94,19 +86,15 @@
             background: #c62828;
         }
 
-        .player {
+        .preview {
             margin-top: 25px;
-            background: #000;
-            border-radius: 10px;
-            padding: 10px;
             display: none;
         }
 
         iframe {
             width: 100%;
-            height: 350px;
+            height: 450px;
             border: none;
-            border-radius: 8px;
         }
 
         #message {
@@ -114,83 +102,59 @@
             font-weight: bold;
             margin-top: 15px;
         }
-
     </style>
-
 </head>
 
 <body>
 
 <header>
-
-    <h1>📺 Manage Online TV</h1>
-
+    <h1>📘 Manage Facebook Live</h1>
     <p>NTCHISI CCAP ONLINE TV</p>
-
 </header>
-
 
 <div class="container">
 
-
     <div class="top">
-
-        <a href="dashboard.html">
-            ← Dashboard
-        </a>
-
-        <a href="tv.html">
-            📺 View TV
-        </a>
-
+        <a href="dashboard.html">← Dashboard</a>
+        <a href="tv.html">📺 View TV</a>
     </div>
-
 
     <div class="box">
 
-        <h2>
-            📺 TV Stream
-        </h2>
+        <h2>🔴 Facebook Live</h2>
 
         <p>
-            Enter the URL of your live TV stream.
+            Paste the public Facebook Live video URL below.
         </p>
 
-
         <label>
-            TV Stream URL
+            Facebook Live URL
         </label>
 
         <input
             type="url"
-            id="streamUrl"
-            placeholder="https://example.com/live"
+            id="facebookUrl"
+            placeholder="https://www.facebook.com/..."
         >
 
-
         <button id="saveButton">
-            💾 Save TV Stream
+            💾 Save Live Video
         </button>
-
 
         <button
             id="deleteButton"
             class="delete">
-
-            🗑️ Delete TV Stream
-
+            🗑️ Remove Live Video
         </button>
-
 
         <p id="message"></p>
 
-
         <div
-            class="player"
-            id="player">
+            class="preview"
+            id="previewBox">
 
             <iframe
-                id="preview"
+                id="previewFrame"
                 allowfullscreen>
             </iframe>
 
@@ -200,146 +164,256 @@
 
 </div>
 
-
 <script type="module">
 
-    import {
-        initializeApp
-    } from
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getAuth,
+    onAuthStateChanged
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    deleteDoc
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-    import {
-        getAuth,
-        onAuthStateChanged
-    } from
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+const firebaseConfig = {
+
+    apiKey:
+    "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+
+    authDomain:
+    "ntchisi-ccap-church-online-tv.firebaseapp.com",
+
+    projectId:
+    "ntchisi-ccap-church-online-tv",
+
+    storageBucket:
+    "ntchisi-ccap-church-online-tv.firebasestorage.app",
+
+    messagingSenderId:
+    "432495723011",
+
+    appId:
+    "1:432495723011:web:9ad91aa93e2f44a8e28436",
+
+    measurementId:
+    "G-69WSZSCK2P"
+};
 
 
-    import {
-        getFirestore,
-        doc,
-        getDoc,
-        setDoc,
-        deleteDoc
-    } from
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+const db = getFirestore(app);
 
 
-    const firebaseConfig = {
+const facebookUrl =
+    document.getElementById("facebookUrl");
 
-        apiKey:
-        "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+const saveButton =
+    document.getElementById("saveButton");
 
-        authDomain:
-        "ntchisi-ccap-church-online-tv.firebaseapp.com",
+const deleteButton =
+    document.getElementById("deleteButton");
 
-        projectId:
-        "ntchisi-ccap-church-online-tv",
+const message =
+    document.getElementById("message");
 
-        storageBucket:
-        "ntchisi-ccap-church-online-tv.firebasestorage.app",
+const previewBox =
+    document.getElementById("previewBox");
 
-        messagingSenderId:
-        "432495723011",
-
-        appId:
-        "1:432495723011:web:9ad91aa93e2f44a8e28436",
-
-        measurementId:
-        "G-69WSZSCK2P"
-
-    };
+const previewFrame =
+    document.getElementById("previewFrame");
 
 
-    const app =
-        initializeApp(firebaseConfig);
-
-    const auth =
-        getAuth(app);
-
-    const db =
-        getFirestore(app);
+const tvRef =
+    doc(db, "settings", "tv");
 
 
-    const streamUrl =
-        document.getElementById("streamUrl");
+function createFacebookEmbed(url) {
 
-    const saveButton =
-        document.getElementById("saveButton");
+    return "https://www.facebook.com/plugins/video.php?href="
+        + encodeURIComponent(url)
+        + "&show_text=false&width=800";
 
-    const deleteButton =
-        document.getElementById("deleteButton");
-
-    const message =
-        document.getElementById("message");
-
-    const player =
-        document.getElementById("player");
-
-    const preview =
-        document.getElementById("preview");
+}
 
 
-    const tvRef =
-        doc(
-            db,
-            "settings",
-            "tv"
-        );
+function showPreview(url) {
+
+    if (!url) {
+
+        previewBox.style.display = "none";
+
+        previewFrame.src = "";
+
+        return;
+    }
+
+    previewFrame.src =
+        createFacebookEmbed(url);
+
+    previewBox.style.display =
+        "block";
+}
 
 
-    // CHECK LOGIN
+onAuthStateChanged(auth, async (user) => {
 
-    onAuthStateChanged(
-        auth,
-        (user) => {
+    if (!user) {
 
-            if (!user) {
+        window.location.href =
+            "admin.html";
 
-                window.location.href =
-                    "admin.html";
+        return;
+    }
 
-            } else {
+    try {
 
-                loadTV();
+        const snapshot =
+            await getDoc(tvRef);
 
-            }
+        if (snapshot.exists()) {
+
+            const data =
+                snapshot.data();
+
+            facebookUrl.value =
+                data.facebookUrl || "";
+
+            showPreview(
+                data.facebookUrl || ""
+            );
 
         }
-    );
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "❌ Failed to load TV.";
+
+        message.style.color =
+            "red";
+    }
+
+});
 
 
-    // LOAD TV
+facebookUrl.addEventListener(
+    "input",
+    () => {
 
-    async function loadTV() {
+        showPreview(
+            facebookUrl.value.trim()
+        );
+
+    }
+);
+
+
+saveButton.addEventListener(
+    "click",
+    async () => {
+
+        const url =
+            facebookUrl.value.trim();
+
+        if (!url) {
+
+            message.textContent =
+                "❌ Paste a Facebook Live URL.";
+
+            message.style.color =
+                "red";
+
+            return;
+        }
+
+        saveButton.disabled = true;
+
+        message.textContent =
+            "Saving...";
+
+        message.style.color =
+            "#075e54";
 
         try {
 
-            const snapshot =
-                await getDoc(tvRef);
+            await setDoc(
+                tvRef,
+                {
+                    facebookUrl: url,
+                    updatedAt: new Date()
+                }
+            );
 
+            message.textContent =
+                "✅ Facebook Live saved!";
 
-            if (snapshot.exists()) {
-
-                const data =
-                    snapshot.data();
-
-                streamUrl.value =
-                    data.streamUrl || "";
-
-                showPreview(
-                    data.streamUrl || ""
-                );
-
-            }
+            message.style.color =
+                "green";
 
         } catch (error) {
 
             console.error(error);
 
             message.textContent =
-                "❌ Failed to load TV.";
+                "❌ Failed to save.";
+
+            message.style.color =
+                "red";
+
+        }
+
+        saveButton.disabled = false;
+
+    }
+);
+
+
+deleteButton.addEventListener(
+    "click",
+    async () => {
+
+        const confirmed =
+            confirm(
+                "Remove the Facebook Live video?"
+            );
+
+        if (!confirmed) return;
+
+        try {
+
+            await deleteDoc(tvRef);
+
+            facebookUrl.value = "";
+
+            showPreview("");
+
+            message.textContent =
+                "✅ Live video removed.";
+
+            message.style.color =
+                "green";
+
+        } catch (error) {
+
+            console.error(error);
+
+            message.textContent =
+                "❌ Failed to remove video.";
 
             message.style.color =
                 "red";
@@ -347,168 +421,9 @@
         }
 
     }
-
-
-    // PREVIEW
-
-    function showPreview(url) {
-
-        if (!url) {
-
-            player.style.display =
-                "none";
-
-            preview.src =
-                "";
-
-            return;
-
-        }
-
-        preview.src =
-            url;
-
-        player.style.display =
-            "block";
-
-    }
-
-
-    streamUrl.addEventListener(
-        "input",
-        () => {
-
-            showPreview(
-                streamUrl.value.trim()
-            );
-
-        }
-    );
-
-
-    // SAVE
-
-    saveButton.addEventListener(
-        "click",
-        async () => {
-
-            const url =
-                streamUrl.value.trim();
-
-
-            if (!url) {
-
-                message.textContent =
-                    "❌ Enter a TV stream URL.";
-
-                message.style.color =
-                    "red";
-
-                return;
-
-            }
-
-
-            saveButton.disabled =
-                true;
-
-
-            message.textContent =
-                "Saving...";
-
-            message.style.color =
-                "#075e54";
-
-
-            try {
-
-                await setDoc(
-                    tvRef,
-                    {
-                        streamUrl: url,
-                        updatedAt: new Date()
-                    }
-                );
-
-
-                message.textContent =
-                    "✅ TV stream saved!";
-
-                message.style.color =
-                    "green";
-
-
-            } catch (error) {
-
-                console.error(error);
-
-                message.textContent =
-                    "❌ Failed to save TV.";
-
-                message.style.color =
-                    "red";
-
-            }
-
-
-            saveButton.disabled =
-                false;
-
-        }
-    );
-
-
-    // DELETE
-
-    deleteButton.addEventListener(
-        "click",
-        async () => {
-
-            const confirmed =
-                confirm(
-                    "Are you sure you want to delete the TV stream?"
-                );
-
-
-            if (!confirmed) {
-                return;
-            }
-
-
-            try {
-
-                await deleteDoc(tvRef);
-
-
-                streamUrl.value = "";
-
-                showPreview("");
-
-
-                message.textContent =
-                    "✅ TV stream deleted.";
-
-                message.style.color =
-                    "green";
-
-
-            } catch (error) {
-
-                console.error(error);
-
-                message.textContent =
-                    "❌ Failed to delete TV.";
-
-                message.style.color =
-                    "red";
-
-            }
-
-        }
-    );
+);
 
 </script>
 
 </body>
-
 </html>
