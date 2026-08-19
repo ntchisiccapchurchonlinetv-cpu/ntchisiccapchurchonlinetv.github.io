@@ -1,1 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Dashboard - NTCHISI CCAP ONLINE TV</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+        }
+
+        header {
+            background: #075e54;
+            color: white;
+            text-align: center;
+            padding: 25px 15px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 950px;
+            margin: 25px auto;
+        }
+
+        .welcome {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .welcome h2 {
+            margin-top: 0;
+            color: #075e54;
+        }
+
+        #userEmail {
+            font-weight: bold;
+            color: #075e54;
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(200px, 1fr));
+
+            gap: 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px 18px;
+            border-radius: 12px;
+            text-align: center;
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card .icon {
+            font-size: 40px;
+        }
+
+        .card h3 {
+            color: #075e54;
+            margin: 10px 0;
+        }
+
+        .card p {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .card a,
+        .card button {
+            display: block;
+            width: 100%;
+            padding: 13px;
+
+            border: none;
+            border-radius: 7px;
+
+            background: #075e54;
+            color: white;
+
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+
+            cursor: pointer;
+        }
+
+        .logout {
+            background: #c62828 !important;
+        }
+
+        footer {
+            text-align: center;
+            color: #777;
+            padding: 25px;
+            margin-top: 25px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<header>
+
+    <h1>🔐 Admin Dashboard</h1>
+
+    <p>NTCHISI CCAP ONLINE TV</p>
+
+</header>
+
+
+<div class="container">
+
+
+    <!-- WELCOME -->
+
+    <div class="welcome">
+
+        <h2>
+            Welcome, Admin 👋
+        </h2>
+
+        <p>
+            Logged in as:
+            <span id="userEmail">
+                Checking...
+            </span>
+        </p>
+
+        <p>
+            Manage your website from here.
+        </p>
+
+    </div>
+
+
+    <!-- MENU -->
+
+    <div class="menu">
+
+
+        <!-- NEWS -->
+
+        <div class="card">
+
+            <div class="icon">
+                📰
+            </div>
+
+            <h3>
+                News
+            </h3>
+
+            <p>
+                Add, edit and delete
+                website news.
+            </p>
+
+            <a href="manage-news.html">
+                Manage News
+            </a>
+
+        </div>
+
+
+        <!-- MUSIC -->
+
+        <div class="card">
+
+            <div class="icon">
+                🎵
+            </div>
+
+            <h3>
+                Music
+            </h3>
+
+            <p>
+                Add, edit and delete
+                gospel music.
+            </p>
+
+            <a href="manage-music.html">
+                Manage Music
+            </a>
+
+        </div>
+
+
+        <!-- ONLINE TV -->
+
+        <div class="card">
+
+            <div class="icon">
+                📺
+            </div>
+
+            <h3>
+                Online TV
+            </h3>
+
+            <p>
+                Manage your online
+                TV broadcasts.
+            </p>
+
+            <a href="manage-tv.html">
+                Manage TV
+            </a>
+
+        </div>
+
+
+        <!-- WEBSITE -->
+
+        <div class="card">
+
+            <div class="icon">
+                🌐
+            </div>
+
+            <h3>
+                Website
+            </h3>
+
+            <p>
+                Open the public
+                website.
+            </p>
+
+            <a href="index.html">
+                Open Website
+            </a>
+
+        </div>
+
+
+        <!-- LOGOUT -->
+
+        <div class="card">
+
+            <div class="icon">
+                🚪
+            </div>
+
+            <h3>
+                Logout
+            </h3>
+
+            <p>
+                Sign out from the
+                admin panel.
+            </p>
+
+            <button
+                class="logout"
+                id="logoutButton">
+
+                Logout
+
+            </button>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<footer>
+
+    <p>
+        © 2026 NTCHISI CCAP ONLINE TV
+    </p>
+
+    <p>
+        Faith • News • Music • Community
+    </p>
+
+</footer>
+
+
+<!-- FIREBASE -->
+
+<script type="module">
+
+    import {
+        initializeApp
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+    import {
+        getAuth,
+        onAuthStateChanged,
+        signOut
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+    const firebaseConfig = {
+
+        apiKey:
+        "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+
+        authDomain:
+        "ntchisi-ccap-church-online-tv.firebaseapp.com",
+
+        projectId:
+        "ntchisi-ccap-church-online-tv",
+
+        storageBucket:
+        "ntchisi-ccap-church-online-tv.firebasestorage.app",
+
+        messagingSenderId:
+        "432495723011",
+
+        appId:
+        "1:432495723011:web:9ad91aa93e2f44a8e28436",
+
+        measurementId:
+        "G-69WSZSCK2P"
+
+    };
+
+
+    const app =
+        initializeApp(firebaseConfig);
+
+    const auth =
+        getAuth(app);
+
+
+    // CHECK LOGIN
+
+    onAuthStateChanged(
+        auth,
+        (user) => {
+
+            if (user) {
+
+                document
+                    .getElementById("userEmail")
+                    .textContent =
+                    user.email;
+
+            } else {
+
+                window.location.href =
+                    "admin.html";
+
+            }
+
+        }
+    );
+
+
+    // LOGOUT
+
+    document
+        .getElementById("logoutButton")
+        .addEventListener(
+            "click",
+            async () => {
+
+                try {
+
+                    await signOut(auth);
+
+                    window.location.href =
+                        "admin.html";
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    alert(
+                        "❌ Failed to logout."
+                    );
+
+                }
+
+            }
+        );
+
+</script>
+
+</body>
+
+  </html>
