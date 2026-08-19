@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Manage TV - NTCHISI CCAP ONLINE TV</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            color: #222;
+        }
+
+        header {
+            background: #075e54;
+            color: white;
+            text-align: center;
+            padding: 25px 15px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 800px;
+            margin: 25px auto;
+        }
+
+        .top {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .top a {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: #075e54;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 7px;
+            background: #075e54;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .delete {
+            background: #c62828;
+        }
+
+        .player {
+            margin-top: 25px;
+            background: #000;
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+        }
+
+        iframe {
+            width: 100%;
+            height: 350px;
+            border: none;
+            border-radius: 8px;
+        }
+
+        #message {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>📺 Manage Online TV</h1>
+
+    <p>NTCHISI CCAP ONLINE TV</p>
+
+</header>
+
+
+<div class="container">
+
+
+    <div class="top">
+
+        <a href="dashboard.html">
+            ← Dashboard
+        </a>
+
+        <a href="tv.html">
+            📺 View TV
+        </a>
+
+    </div>
+
+
+    <div class="box">
+
+        <h2>
+            📺 TV Stream
+        </h2>
+
+        <p>
+            Enter the URL of your live TV stream.
+        </p>
+
+
+        <label>
+            TV Stream URL
+        </label>
+
+        <input
+            type="url"
+            id="streamUrl"
+            placeholder="https://example.com/live"
+        >
+
+
+        <button id="saveButton">
+            💾 Save TV Stream
+        </button>
+
+
+        <button
+            id="deleteButton"
+            class="delete">
+
+            🗑️ Delete TV Stream
+
+        </button>
+
+
+        <p id="message"></p>
+
+
+        <div
+            class="player"
+            id="player">
+
+            <iframe
+                id="preview"
+                allowfullscreen>
+            </iframe>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+    import {
+        initializeApp
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+    import {
+        getAuth,
+        onAuthStateChanged
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+    import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        deleteDoc
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+    const firebaseConfig = {
+
+        apiKey:
+        "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+
+        authDomain:
+        "ntchisi-ccap-church-online-tv.firebaseapp.com",
+
+        projectId:
+        "ntchisi-ccap-church-online-tv",
+
+        storageBucket:
+        "ntchisi-ccap-church-online-tv.firebasestorage.app",
+
+        messagingSenderId:
+        "432495723011",
+
+        appId:
+        "1:432495723011:web:9ad91aa93e2f44a8e28436",
+
+        measurementId:
+        "G-69WSZSCK2P"
+
+    };
+
+
+    const app =
+        initializeApp(firebaseConfig);
+
+    const auth =
+        getAuth(app);
+
+    const db =
+        getFirestore(app);
+
+
+    const streamUrl =
+        document.getElementById("streamUrl");
+
+    const saveButton =
+        document.getElementById("saveButton");
+
+    const deleteButton =
+        document.getElementById("deleteButton");
+
+    const message =
+        document.getElementById("message");
+
+    const player =
+        document.getElementById("player");
+
+    const preview =
+        document.getElementById("preview");
+
+
+    const tvRef =
+        doc(
+            db,
+            "settings",
+            "tv"
+        );
+
+
+    // CHECK LOGIN
+
+    onAuthStateChanged(
+        auth,
+        (user) => {
+
+            if (!user) {
+
+                window.location.href =
+                    "admin.html";
+
+            } else {
+
+                loadTV();
+
+            }
+
+        }
+    );
+
+
+    // LOAD TV
+
+    async function loadTV() {
+
+        try {
+
+            const snapshot =
+                await getDoc(tvRef);
+
+
+            if (snapshot.exists()) {
+
+                const data =
+                    snapshot.data();
+
+                streamUrl.value =
+                    data.streamUrl || "";
+
+                showPreview(
+                    data.streamUrl || ""
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            message.textContent =
+                "❌ Failed to load TV.";
+
+            message.style.color =
+                "red";
+
+        }
+
+    }
+
+
+    // PREVIEW
+
+    function showPreview(url) {
+
+        if (!url) {
+
+            player.style.display =
+                "none";
+
+            preview.src =
+                "";
+
+            return;
+
+        }
+
+        preview.src =
+            url;
+
+        player.style.display =
+            "block";
+
+    }
+
+
+    streamUrl.addEventListener(
+        "input",
+        () => {
+
+            showPreview(
+                streamUrl.value.trim()
+            );
+
+        }
+    );
+
+
+    // SAVE
+
+    saveButton.addEventListener(
+        "click",
+        async () => {
+
+            const url =
+                streamUrl.value.trim();
+
+
+            if (!url) {
+
+                message.textContent =
+                    "❌ Enter a TV stream URL.";
+
+                message.style.color =
+                    "red";
+
+                return;
+
+            }
+
+
+            saveButton.disabled =
+                true;
+
+
+            message.textContent =
+                "Saving...";
+
+            message.style.color =
+                "#075e54";
+
+
+            try {
+
+                await setDoc(
+                    tvRef,
+                    {
+                        streamUrl: url,
+                        updatedAt: new Date()
+                    }
+                );
+
+
+                message.textContent =
+                    "✅ TV stream saved!";
+
+                message.style.color =
+                    "green";
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                message.textContent =
+                    "❌ Failed to save TV.";
+
+                message.style.color =
+                    "red";
+
+            }
+
+
+            saveButton.disabled =
+                false;
+
+        }
+    );
+
+
+    // DELETE
+
+    deleteButton.addEventListener(
+        "click",
+        async () => {
+
+            const confirmed =
+                confirm(
+                    "Are you sure you want to delete the TV stream?"
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            try {
+
+                await deleteDoc(tvRef);
+
+
+                streamUrl.value = "";
+
+                showPreview("");
+
+
+                message.textContent =
+                    "✅ TV stream deleted.";
+
+                message.style.color =
+                    "green";
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                message.textContent =
+                    "❌ Failed to delete TV.";
+
+                message.style.color =
+                    "red";
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+
+</html>
