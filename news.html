@@ -1,48 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>News - NTCHISI CCAP ONLINE TV</title>
 
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f2f2f2;
+            color: #222;
         }
 
         header {
-            background: #111;
+            background: #075e54;
             color: white;
             text-align: center;
-            padding: 20px;
+            padding: 25px 15px;
+        }
+
+        header h1 {
+            margin: 0;
         }
 
         .container {
-            max-width: 700px;
-            margin: auto;
-            padding: 20px;
+            width: 92%;
+            max-width: 800px;
+            margin: 25px auto;
         }
 
         .news-card {
             background: white;
-            margin-bottom: 25px;
-            padding: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.12);
         }
 
         .news-card img {
             width: 100%;
-            height: 220px;
+            max-height: 300px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 10px;
+            margin-bottom: 15px;
         }
 
-        h2 {
-            margin-bottom: 5px;
+        .news-card h2 {
+            color: #075e54;
+            margin-top: 0;
         }
 
         .date {
@@ -50,99 +68,378 @@
             font-size: 14px;
         }
 
+        .content {
+            line-height: 1.7;
+        }
+
         .read-more {
             display: inline-block;
-            background: #111;
+            background: #075e54;
             color: white;
-            padding: 10px 16px;
+            padding: 11px 17px;
             text-decoration: none;
             border-radius: 7px;
             margin-top: 10px;
+            font-weight: bold;
+        }
+
+        #status {
+            text-align: center;
+            font-weight: bold;
+            margin: 25px 0;
         }
 
         .back {
             display: inline-block;
-            background: #555;
+            background: #075e54;
             color: white;
             padding: 12px 20px;
             text-decoration: none;
             border-radius: 7px;
             margin-top: 5px;
+            font-weight: bold;
         }
+
     </style>
+
 </head>
+
 
 <body>
 
+
 <header>
-    <h1>NTCHISI CCAP ONLINE TV</h1>
-    <p>Latest News</p>
+
+    <h1>
+        📰 NTCHISI CCAP ONLINE TV
+    </h1>
+
+    <p>
+        Latest News
+    </p>
+
 </header>
+
 
 <div class="container">
 
-    <!-- NEWS 1 -->
-    <div class="news-card">
-        <img src="news1.jpg" alt="News 1">
 
-        <h2>Welcome to NTCHISI CCAP ONLINE TV</h2>
-
-        <p class="date">17 August 2026</p>
-
-        <p>
-            Welcome to NTCHISI CCAP ONLINE TV News.
-            Here you will find the latest news, events
-            and updates.
-        </p>
-
-        <a class="read-more" href="news1.html">
-            Read More →
-        </a>
-    </div>
+    <p id="status">
+        Loading news...
+    </p>
 
 
-    <!-- NEWS 2 -->
-    <div class="news-card">
-        <img src="news2.jpg" alt="News 2">
-
-        <h2>Latest Church News and Updates</h2>
-
-        <p class="date">17 August 2026</p>
-
-        <p>
-            Get the latest updates, announcements and
-            important information from the church community.
-        </p>
-
-        <a class="read-more" href="news2.html">
-            Read More →
-        </a>
-    </div>
+    <div id="newsList"></div>
 
 
-    <!-- NEWS 3 -->
-    <div class="news-card">
-        <img src="news3.jpg" alt="News 3">
+    <a
+        class="back"
+        href="index.html">
 
-        <h2>Community News</h2>
-
-        <p class="date">17 August 2026</p>
-
-        <p>
-            Stay connected with the latest activities
-            and news happening in our community.
-        </p>
-
-        <a class="read-more" href="news3.html">
-            Read More →
-        </a>
-    </div>
-
-    <a class="back" href="index.html">
         ← Back to Home
+
     </a>
+
 
 </div>
 
+
+<script type="module">
+
+
+    import {
+        initializeApp
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+    import {
+        getFirestore,
+        collection,
+        getDocs
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+    const firebaseConfig = {
+
+        apiKey:
+        "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+
+        authDomain:
+        "ntchisi-ccap-church-online-tv.firebaseapp.com",
+
+        projectId:
+        "ntchisi-ccap-church-online-tv",
+
+        storageBucket:
+        "ntchisi-ccap-church-online-tv.firebasestorage.app",
+
+        messagingSenderId:
+        "432495723011",
+
+        appId:
+        "1:432495723011:web:9ad91aa93e2f44a8e28436",
+
+        measurementId:
+        "G-69WSZSCK2P"
+
+    };
+
+
+    const app =
+        initializeApp(firebaseConfig);
+
+
+    const db =
+        getFirestore(app);
+
+
+    const newsList =
+        document.getElementById(
+            "newsList"
+        );
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    async function loadNews() {
+
+
+        try {
+
+
+            const snapshot =
+                await getDocs(
+                    collection(
+                        db,
+                        "news"
+                    )
+                );
+
+
+            newsList.innerHTML =
+                "";
+
+
+            if (snapshot.empty) {
+
+
+                status.textContent =
+                    "📰 No news available yet.";
+
+
+                return;
+
+            }
+
+
+            status.textContent =
+                "";
+
+
+            snapshot.forEach(
+                (newsDoc) => {
+
+
+                    const news =
+                        newsDoc.data();
+
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    card.className =
+                        "news-card";
+
+
+                    // IMAGE
+
+                    if (
+                        news.imageUrl
+                    ) {
+
+
+                        const image =
+                            document.createElement(
+                                "img"
+                            );
+
+
+                        image.src =
+                            news.imageUrl;
+
+
+                        image.alt =
+                            news.title ||
+                            "News";
+
+
+                        image.onerror =
+                            function() {
+
+                                this.style.display =
+                                    "none";
+
+                            };
+
+
+                        card.appendChild(
+                            image
+                        );
+
+                    }
+
+
+                    // TITLE
+
+                    const title =
+                        document.createElement(
+                            "h2"
+                        );
+
+
+                    title.textContent =
+                        news.title ||
+                        "Untitled News";
+
+
+                    card.appendChild(
+                        title
+                    );
+
+
+                    // DATE
+
+                    const date =
+                        document.createElement(
+                            "p"
+                        );
+
+
+                    date.className =
+                        "date";
+
+
+                    if (
+                        news.createdAt &&
+                        news.createdAt.toDate
+                    ) {
+
+
+                        date.textContent =
+                            news.createdAt
+                                .toDate()
+                                .toLocaleDateString(
+                                    "en-GB"
+                                );
+
+                    } else {
+
+
+                        date.textContent =
+                            "Recently published";
+
+                    }
+
+
+                    card.appendChild(
+                        date
+                    );
+
+
+                    // CONTENT
+
+                    const content =
+                        document.createElement(
+                            "p"
+                        );
+
+
+                    content.className =
+                        "content";
+
+
+                    content.textContent =
+                        news.content ||
+                        news.description ||
+                        "";
+
+
+                    card.appendChild(
+                        content
+                    );
+
+
+                    // READ MORE
+
+                    const readMore =
+                        document.createElement(
+                            "a"
+                        );
+
+
+                    readMore.className =
+                        "read-more";
+
+
+                    readMore.textContent =
+                        "Read More →";
+
+
+                    readMore.href =
+                        "edit-news.html?id=" +
+                        newsDoc.id;
+
+
+                    card.appendChild(
+                        readMore
+                    );
+
+
+                    newsList.appendChild(
+                        card
+                    );
+
+
+                }
+            );
+
+
+        } catch (error) {
+
+
+            console.error(
+                error
+            );
+
+
+            status.textContent =
+                "❌ Failed to load news.";
+
+
+            status.style.color =
+                "red";
+
+
+        }
+
+    }
+
+
+    loadNews();
+
+
+</script>
+
+
 </body>
+
 </html>
