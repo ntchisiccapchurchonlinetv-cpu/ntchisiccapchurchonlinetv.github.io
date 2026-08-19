@@ -1,17 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Live TV - NTCHISI CCAP ONLINE TV</title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
@@ -26,160 +21,128 @@
         header {
             background: #075e54;
             text-align: center;
-            padding: 25px 15px;
+            padding: 20px 15px;
         }
 
         header h1 {
             margin: 0;
-            font-size: 25px;
         }
 
         .live {
             display: inline-block;
-            background: red;
-            padding: 7px 15px;
+            background: #c62828;
+            padding: 7px 14px;
             border-radius: 20px;
-            margin-top: 12px;
+            margin-top: 10px;
             font-weight: bold;
-        }
-
-        .offline {
-            display: inline-block;
-            background: #555;
-            padding: 7px 15px;
-            border-radius: 20px;
-            margin-top: 12px;
-            font-weight: bold;
-        }
-
-        .container {
-            width: 94%;
-            max-width: 900px;
-            margin: 25px auto;
         }
 
         .player {
-            background: black;
-            border-radius: 12px;
-            overflow: hidden;
+            width: 94%;
+            max-width: 900px;
+            margin: 25px auto;
+            background: #000;
             min-height: 300px;
-
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 10px;
+            overflow: hidden;
         }
 
         iframe {
             width: 100%;
             height: 500px;
             border: none;
-            display: none;
         }
 
-        .message {
+        .offline {
             text-align: center;
-            padding: 40px 20px;
+            padding: 50px 20px;
         }
 
-        .message h2 {
-            margin-top: 0;
+        .offline h2 {
+            margin-bottom: 10px;
+        }
+
+        .content {
+            text-align: center;
+            padding: 20px;
         }
 
         .home {
             display: inline-block;
             background: #075e54;
             color: white;
-            padding: 13px 22px;
-            border-radius: 7px;
+            padding: 12px 22px;
+            border-radius: 6px;
             text-decoration: none;
-            font-weight: bold;
             margin-top: 15px;
         }
 
         footer {
             background: #033f3a;
             text-align: center;
-            padding: 25px 15px;
-            margin-top: 35px;
+            padding: 20px;
+            margin-top: 30px;
         }
-
-        @media (max-width: 600px) {
-
-            iframe {
-                height: 300px;
-            }
-
-        }
-
     </style>
-
 </head>
-
 
 <body>
 
-
 <header>
 
-    <h1>
-        📺 NTCHISI CCAP CHURCH ONLINE TV
-    </h1>
+    <h1>📺 NTCHISI CCAP ONLINE TV</h1>
 
-    <div
-        class="offline"
-        id="liveStatus">
-
-        ⚫ OFFLINE
-
+    <div class="live">
+        🔴 LIVE TV
     </div>
 
 </header>
 
 
-<div class="container">
+<div class="player" id="player">
 
+    <div class="offline" id="offline">
 
-    <div class="player">
+        <h2>📺 No Live Video Available</h2>
 
-
-        <iframe
-            id="tvPlayer"
-            allow="autoplay; fullscreen"
-            allowfullscreen>
-        </iframe>
-
-
-        <div
-            class="message"
-            id="message">
-
-            <h2>
-                📺 Live TV
-            </h2>
-
-            <p>
-                No live video available at the moment.
-            </p>
-
-        </div>
-
+        <p>
+            There is currently no live broadcast.
+        </p>
 
     </div>
 
+    <iframe
+        id="facebookPlayer"
+        allowfullscreen
+        scrolling="no"
+        frameborder="0"
+        style="display:none;">
+    </iframe>
 
-    <div
-        style="text-align:center;">
+</div>
 
-        <a
-            href="index.html"
-            class="home">
 
-            🏠 Back to Home
+<div class="content">
 
-        </a>
+    <h2>
+        Welcome to NTCHISI CCAP Online TV
+    </h2>
 
-    </div>
+    <p>
+        Watch church programs, worship,
+        music and community events.
+    </p>
 
+    <a
+        href="index.html"
+        class="home">
+
+        🏠 Back to Home
+
+    </a>
 
 </div>
 
@@ -199,209 +162,140 @@
 
 <script type="module">
 
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-    import {
-        initializeApp
-    } from
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+    getFirestore,
+    doc,
+    getDoc
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-    import {
-        getFirestore,
-        doc,
-        getDoc
-    } from
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = {
 
+    apiKey:
+    "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
 
-    const firebaseConfig = {
+    authDomain:
+    "ntchisi-ccap-church-online-tv.firebaseapp.com",
 
-        apiKey:
-        "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+    projectId:
+    "ntchisi-ccap-church-online-tv",
 
-        authDomain:
-        "ntchisi-ccap-church-online-tv.firebaseapp.com",
+    storageBucket:
+    "ntchisi-ccap-church-online-tv.firebasestorage.app",
 
-        projectId:
-        "ntchisi-ccap-church-online-tv",
+    messagingSenderId:
+    "432495723011",
 
-        storageBucket:
-        "ntchisi-ccap-church-online-tv.firebasestorage.app",
+    appId:
+    "1:432495723011:web:9ad91aa93e2f44a8e28436",
 
-        messagingSenderId:
-        "432495723011",
+    measurementId:
+    "G-69WSZSCK2P"
+};
 
-        appId:
-        "1:432495723011:web:9ad91aa93e2f44a8e28436",
 
-        measurementId:
-        "G-69WSZSCK2P"
+const app =
+    initializeApp(firebaseConfig);
 
-    };
+const db =
+    getFirestore(app);
 
 
-    const app =
-        initializeApp(firebaseConfig);
+const tvRef =
+    doc(db, "settings", "tv");
 
 
-    const db =
-        getFirestore(app);
+const player =
+    document.getElementById("facebookPlayer");
 
+const offline =
+    document.getElementById("offline");
 
-    const tvPlayer =
-        document.getElementById(
-            "tvPlayer"
-        );
 
+function createFacebookEmbed(url) {
 
-    const message =
-        document.getElementById(
-            "message"
-        );
+    return "https://www.facebook.com/plugins/video.php?href="
+        + encodeURIComponent(url)
+        + "&show_text=false&width=900";
 
+}
 
-    const liveStatus =
-        document.getElementById(
-            "liveStatus"
-        );
 
+async function loadLiveTV() {
 
-    const tvRef =
-        doc(
-            db,
-            "settings",
-            "tv"
-        );
+    try {
 
+        const snapshot =
+            await getDoc(tvRef);
 
-    async function loadTV() {
 
-
-        try {
-
-
-            const snapshot =
-                await getDoc(tvRef);
-
-
-            if (
-                snapshot.exists()
-            ) {
-
-
-                const data =
-                    snapshot.data();
-
-
-                const streamUrl =
-                    data.streamUrl ||
-                    "";
-
-
-                if (streamUrl) {
-
-
-                    // LIVE
-
-                    tvPlayer.src =
-                        streamUrl;
-
-
-                    tvPlayer.style.display =
-                        "block";
-
-
-                    message.style.display =
-                        "none";
-
-
-                    liveStatus.textContent =
-                        "🔴 LIVE";
-
-
-                    liveStatus.className =
-                        "live";
-
-
-                } else {
-
-
-                    // OFFLINE
-
-                    showOffline();
-
-                }
-
-
-            } else {
-
-
-                // NO TV SETTINGS
-
-                showOffline();
-
-            }
-
-
-        } catch (error) {
-
-
-            console.error(
-                error
-            );
-
+        if (!snapshot.exists()) {
 
             showOffline();
 
+            return;
+
         }
 
-    }
+
+        const data =
+            snapshot.data();
 
 
-    function showOffline() {
+        const url =
+            data.facebookUrl || "";
 
 
-        tvPlayer.src =
-            "";
+        if (!url) {
+
+            showOffline();
+
+            return;
+
+        }
 
 
-        tvPlayer.style.display =
+        player.src =
+            createFacebookEmbed(url);
+
+        player.style.display =
+            "block";
+
+        offline.style.display =
             "none";
 
 
-        message.style.display =
-            "block";
+    } catch (error) {
 
+        console.error(error);
 
-        message.innerHTML = `
-
-            <h2>
-                📺 Live TV
-            </h2>
-
-            <p>
-                No live video available at the moment.
-            </p>
-
-        `;
-
-
-        liveStatus.textContent =
-            "⚫ OFFLINE";
-
-
-        liveStatus.className =
-            "offline";
+        showOffline();
 
     }
 
+}
 
-    loadTV();
 
+function showOffline() {
+
+    player.src = "";
+
+    player.style.display =
+        "none";
+
+    offline.style.display =
+        "block";
+
+}
+
+
+loadLiveTV();
 
 </script>
 
-
 </body>
-
 </html>
