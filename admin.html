@@ -1,1 +1,239 @@
 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Login - NTCHISI CCAP ONLINE TV</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+        }
+
+        header {
+            background: #075e54;
+            color: white;
+            text-align: center;
+            padding: 25px 15px;
+        }
+
+        .login-box {
+            width: 90%;
+            max-width: 420px;
+            background: white;
+            margin: 40px auto;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        .login-box h2 {
+            color: #075e54;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 20px;
+            background: #075e54;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #999;
+        }
+
+        .back {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #075e54;
+            text-decoration: none;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🔐 Admin Panel</h1>
+    <p>NTCHISI CCAP ONLINE TV</p>
+</header>
+
+<div class="login-box">
+
+    <h2>Admin Login</h2>
+
+    <form id="loginForm">
+
+        <label for="email">Email</label>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Enter admin email"
+            required
+        >
+
+        <label for="password">Password</label>
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Enter password"
+            required
+        >
+
+        <button type="submit" id="loginButton">
+            🔐 Login
+        </button>
+
+    </form>
+
+    <p id="message"></p>
+
+    <a href="index.html" class="back">
+        ← Back to Website
+    </a>
+
+</div>
+
+<!-- Firebase -->
+<script type="module">
+
+    import { initializeApp } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+    import {
+        getAuth,
+        signInWithEmailAndPassword
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+    // ==============================
+    // FIREBASE CONFIG
+    // ==============================
+
+    const firebaseConfig = {
+    apiKey: "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+    authDomain: "ntchisi-ccap-church-online-tv.firebaseapp.com",
+    projectId: "ntchisi-ccap-church-online-tv",
+    storageBucket: "ntchisi-ccap-church-online-tv.firebasestorage.app",
+    messagingSenderId: "432495723011",
+    appId: "1:432495723011:web:9ad91aa93e2f44a8e28436",
+    measurementId: "G-69WSZSCK2P"
+};
+
+
+    // Initialize Firebase
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+
+
+    // Login
+
+    const loginForm = document.getElementById("loginForm");
+
+    const message = document.getElementById("message");
+
+    const loginButton = document.getElementById("loginButton");
+
+
+    loginForm.addEventListener("submit", async (e) => {
+
+        e.preventDefault();
+
+        const email =
+            document.getElementById("email").value.trim();
+
+        const password =
+            document.getElementById("password").value;
+
+
+        message.textContent = "Logging in...";
+
+        message.style.color = "#075e54";
+
+        loginButton.disabled = true;
+
+
+        try {
+
+            await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+
+            message.textContent =
+                "✅ Login successful!";
+
+            message.style.color = "green";
+
+
+            // Open admin dashboard
+
+            setTimeout(() => {
+    window.location.href = "./dashboard.html";
+}, 500);
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            message.textContent =
+                "❌ Incorrect email or password.";
+
+            message.style.color = "red";
+
+            loginButton.disabled = false;
+
+        }
+
+    });
+
+</script>
+
+</body>
+  </html>
