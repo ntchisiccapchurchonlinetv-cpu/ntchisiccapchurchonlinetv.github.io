@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Music - NTCHISI CCAP ONLINE TV</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+        }
+
+        header {
+            background: #075e54;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 900px;
+            margin: 25px auto;
+        }
+
+        .top {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .top a {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: #075e54;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+
+        .music-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .music-card img {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .music-card h2 {
+            color: #075e54;
+            margin-top: 0;
+        }
+
+        .artist {
+            color: #666;
+            font-weight: bold;
+        }
+
+        .description {
+            line-height: 1.6;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 7px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .edit-btn {
+            background: #075e54;
+        }
+
+        .delete-btn {
+            background: #c62828;
+        }
+
+        #status {
+            text-align: center;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .error {
+            color: red;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<header>
+
+    <h1>🎵 Manage Music</h1>
+
+    <p>NTCHISI CCAP ONLINE TV</p>
+
+</header>
+
+
+<div class="container">
+
+    <div class="top">
+
+        <a href="add-music.html">
+            ➕ Add Music
+        </a>
+
+        <a href="dashboard.html">
+            ← Dashboard
+        </a>
+
+    </div>
+
+
+    <p id="status">
+        Loading music...
+    </p>
+
+
+    <div id="musicList"></div>
+
+</div>
+
+
+<script type="module">
+
+    import { initializeApp } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+    import {
+        getAuth,
+        onAuthStateChanged
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+    import {
+        getFirestore,
+        collection,
+        getDocs,
+        deleteDoc,
+        doc
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+    const firebaseConfig = {
+
+        apiKey:
+        "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+
+        authDomain:
+        "ntchisi-ccap-church-online-tv.firebaseapp.com",
+
+        projectId:
+        "ntchisi-ccap-church-online-tv",
+
+        storageBucket:
+        "ntchisi-ccap-church-online-tv.firebasestorage.app",
+
+        messagingSenderId:
+        "432495723011",
+
+        appId:
+        "1:432495723011:web:9ad91aa93e2f44a8e28436",
+
+        measurementId:
+        "G-69WSZSCK2P"
+    };
+
+
+    const app =
+        initializeApp(firebaseConfig);
+
+    const auth =
+        getAuth(app);
+
+    const db =
+        getFirestore(app);
+
+
+    const musicList =
+        document.getElementById("musicList");
+
+    const status =
+        document.getElementById("status");
+
+
+    // CHECK LOGIN
+
+    onAuthStateChanged(auth, (user) => {
+
+        if (!user) {
+
+            window.location.href =
+                "admin.html";
+
+        } else {
+
+            loadMusic();
+
+        }
+
+    });
+
+
+    // LOAD MUSIC
+
+    async function loadMusic() {
+
+        try {
+
+            const snapshot =
+                await getDocs(
+                    collection(db, "music")
+                );
+
+
+            musicList.innerHTML = "";
+
+
+            if (snapshot.empty) {
+
+                status.textContent =
+                    "🎵 No music added yet.";
+
+                return;
+            }
+
+
+            status.textContent = "";
+
+
+            snapshot.forEach((musicDoc) => {
+
+                const music =
+                    musicDoc.data();
+
+
+                const card =
+                    document.createElement("div");
+
+                card.className =
+                    "music-card";
+
+
+                // IMAGE
+
+                if (music.imageUrl) {
+
+                    const image =
+                        document.createElement("img");
+
+                    image.src =
+                        music.imageUrl;
+
+                    image.alt =
+                        music.title || "Music";
+
+                    image.onerror =
+                        function() {
+
+                            this.style.display =
+                                "none";
+
+                        };
+
+                    card.appendChild(image);
+                }
+
+
+                // TITLE
+
+                const title =
+                    document.createElement("h2");
+
+                title.textContent =
+                    music.title ||
+                    "Untitled Song";
+
+                card.appendChild(title);
+
+
+                // ARTIST
+
+                const artist =
+                    document.createElement("p");
+
+                artist.className =
+                    "artist";
+
+                artist.textContent =
+                    "🎤 " +
+                    (music.artist ||
+                    "Unknown Artist");
+
+                card.appendChild(artist);
+
+
+                // DESCRIPTION
+
+                if (music.description) {
+
+                    const description =
+                        document.createElement("p");
+
+                    description.className =
+                        "description";
+
+                    description.textContent =
+                        music.description;
+
+                    card.appendChild(description);
+
+                }
+
+
+                // AUDIO
+
+if (music.audioUrl) {
+
+    const audio =
+        document.createElement("audio");
+
+    audio.controls = true;
+
+    audio.preload = "metadata";
+
+    audio.src =
+        music.audioUrl;
+
+    audio.style.width =
+        "100%";
+
+    audio.style.marginTop =
+        "15px";
+
+    card.appendChild(audio);
+
+}
+
+
+                // BUTTONS
+
+                const buttons =
+                    document.createElement("div");
+
+                buttons.className =
+                    "buttons";
+
+
+                // EDIT
+
+                const editButton =
+                    document.createElement("button");
+
+                editButton.className =
+                    "edit-btn";
+
+                editButton.textContent =
+                    "✏️ Edit Music";
+
+
+                editButton.onclick =
+                    function() {
+
+                        window.location.href =
+                            "edit-music.html?id=" +
+                            musicDoc.id;
+
+                    };
+
+
+                // DELETE
+
+                const deleteButton =
+                    document.createElement("button");
+
+                deleteButton.className =
+                    "delete-btn";
+
+                deleteButton.textContent =
+                    "🗑️ Delete";
+
+
+                deleteButton.onclick =
+                    function() {
+
+                        deleteMusic(
+                            musicDoc.id
+                        );
+
+                    };
+
+
+                buttons.appendChild(
+                    editButton
+                );
+
+                buttons.appendChild(
+                    deleteButton
+                );
+
+
+                card.appendChild(
+                    buttons
+                );
+
+
+                musicList.appendChild(
+                    card
+                );
+
+            });
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            status.textContent =
+                "❌ Failed to load music.";
+
+            status.className =
+                "error";
+
+        }
+
+    }
+
+
+    // DELETE MUSIC
+
+    async function deleteMusic(musicId) {
+
+        const confirmed =
+            confirm(
+                "Are you sure you want to delete this music?"
+            );
+
+
+        if (!confirmed) {
+
+            return;
+
+        }
+
+
+        try {
+
+            await deleteDoc(
+                doc(
+                    db,
+                    "music",
+                    musicId
+                )
+            );
+
+
+            alert(
+                "✅ Music deleted successfully!"
+            );
+
+
+            loadMusic();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "❌ Failed to delete music."
+            );
+
+        }
+
+    }
+
+</script>
+
+</body>
+
+  </html>
