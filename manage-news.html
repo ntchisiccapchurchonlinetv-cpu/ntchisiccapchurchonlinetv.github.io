@@ -1,1 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage News - NTCHISI CCAP ONLINE TV</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+        }
+
+        header {
+            background: #075e54;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 900px;
+            margin: 25px auto;
+        }
+
+        .top {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .top a {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: #075e54;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+
+        .news-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .news-image {
+            width: 100%;
+            max-height: 350px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .news-card h2 {
+            color: #075e54;
+            margin-top: 0;
+        }
+
+        .news-card p {
+            line-height: 1.6;
+        }
+
+        .meta {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            border: none;
+            padding: 11px 15px;
+            border-radius: 7px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .edit-btn {
+            background: #075e54;
+        }
+
+        .delete-btn {
+            background: #c62828;
+        }
+
+        #status {
+            text-align: center;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .no-image {
+            background: #eeeeee;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            color: #777;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .edit-btn,
+            .delete-btn {
+                width: 100%;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>📰 Manage News</h1>
+
+    <p>NTCHISI CCAP ONLINE TV</p>
+
+</header>
+
+
+<div class="container">
+
+
+    <div class="top">
+
+        <a href="add-news.html">
+            ➕ Add News
+        </a>
+
+        <a href="dashboard.html">
+            ← Dashboard
+        </a>
+
+    </div>
+
+
+    <p id="status">
+        Loading news...
+    </p>
+
+
+    <div id="newsList"></div>
+
+
+</div>
+
+
+
+<script type="module">
+
+
+    // ============================
+    // FIREBASE
+    // ============================
+
+    import { initializeApp } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+    import {
+        getAuth,
+        onAuthStateChanged
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+    import {
+        getFirestore,
+        collection,
+        getDocs,
+        deleteDoc,
+        doc
+    } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+
+    // ============================
+    // FIREBASE CONFIG
+    // ============================
+
+    const firebaseConfig = {
+
+        apiKey:
+        "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+
+        authDomain:
+        "ntchisi-ccap-church-online-tv.firebaseapp.com",
+
+        projectId:
+        "ntchisi-ccap-church-online-tv",
+
+        storageBucket:
+        "ntchisi-ccap-church-online-tv.firebasestorage.app",
+
+        messagingSenderId:
+        "432495723011",
+
+        appId:
+        "1:432495723011:web:9ad91aa93e2f44a8e28436",
+
+        measurementId:
+        "G-69WSZSCK2P"
+
+    };
+
+
+    const app =
+        initializeApp(firebaseConfig);
+
+
+    const auth =
+        getAuth(app);
+
+
+    const db =
+        getFirestore(app);
+
+
+
+    // ============================
+    // ELEMENTS
+    // ============================
+
+    const newsList =
+        document.getElementById("newsList");
+
+
+    const status =
+        document.getElementById("status");
+
+
+
+    // ============================
+    // CHECK LOGIN
+    // ============================
+
+    onAuthStateChanged(auth, (user) => {
+
+        if (!user) {
+
+            window.location.href =
+                "admin.html";
+
+        } else {
+
+            loadNews();
+
+        }
+
+    });
+
+
+
+    // ============================
+    // LOAD NEWS
+    // ============================
+
+    async function loadNews() {
+
+        try {
+
+            status.textContent =
+                "Loading news...";
+
+
+            const querySnapshot =
+                await getDocs(
+                    collection(db, "news")
+                );
+
+
+            newsList.innerHTML = "";
+
+
+            if (querySnapshot.empty) {
+
+                status.textContent =
+                    "No news published yet.";
+
+                return;
+
+            }
+
+
+            status.textContent = "";
+
+
+
+            // ============================
+            // EACH NEWS
+            // ============================
+
+            querySnapshot.forEach((newsDoc) => {
+
+
+                const news =
+                    newsDoc.data();
+
+
+                const card =
+                    document.createElement("div");
+
+
+                card.className =
+                    "news-card";
+
+
+
+                // ============================
+                // IMAGE
+                // ============================
+
+                if (
+                    news.imageUrl &&
+                    news.imageUrl.trim() !== ""
+                ) {
+
+
+                    const image =
+                        document.createElement("img");
+
+
+                    image.className =
+                        "news-image";
+
+
+                    image.src =
+                        news.imageUrl;
+
+
+                    image.alt =
+                        news.title ||
+                        "News image";
+
+
+                    image.onerror = function () {
+
+                        image.style.display =
+                            "none";
+
+                    };
+
+
+                    card.appendChild(image);
+
+
+                } else {
+
+
+                    const noImage =
+                        document.createElement("div");
+
+
+                    noImage.className =
+                        "no-image";
+
+
+                    noImage.textContent =
+                        "🖼️ No image added";
+
+
+                    card.appendChild(noImage);
+
+                }
+
+
+
+                // ============================
+                // TITLE
+                // ============================
+
+                const title =
+                    document.createElement("h2");
+
+
+                title.textContent =
+                    news.title ||
+                    "Untitled";
+
+
+                card.appendChild(title);
+
+
+
+                // ============================
+                // DESCRIPTION
+                // ============================
+
+                const description =
+                    document.createElement("p");
+
+
+                description.textContent =
+                    news.description ||
+                    "";
+
+
+                card.appendChild(description);
+
+
+
+                // ============================
+                // AUTHOR
+                // ============================
+
+                const author =
+                    document.createElement("p");
+
+
+                author.className =
+                    "meta";
+
+
+                author.textContent =
+                    "Author: " +
+                    (news.author || "Admin");
+
+
+                card.appendChild(author);
+
+
+
+                // ============================
+                // BUTTONS
+                // ============================
+
+                const buttons =
+                    document.createElement("div");
+
+
+                buttons.className =
+                    "buttons";
+
+
+
+                // EDIT BUTTON
+
+                const editButton =
+                    document.createElement("button");
+
+
+                editButton.className =
+                    "edit-btn";
+
+
+                editButton.textContent =
+                    "✏️ Edit News";
+
+
+                editButton.addEventListener(
+                    "click",
+                    () => {
+
+                        window.location.href =
+                            "edit-news.html?id=" +
+                            newsDoc.id;
+
+                    }
+                );
+
+
+
+                // DELETE BUTTON
+
+                const deleteButton =
+                    document.createElement("button");
+
+
+                deleteButton.className =
+                    "delete-btn";
+
+
+                deleteButton.textContent =
+                    "🗑️ Delete";
+
+
+                deleteButton.addEventListener(
+                    "click",
+                    () => {
+
+                        deleteNews(
+                            newsDoc.id
+                        );
+
+                    }
+                );
+
+
+
+                buttons.appendChild(
+                    editButton
+                );
+
+
+                buttons.appendChild(
+                    deleteButton
+                );
+
+
+                card.appendChild(
+                    buttons
+                );
+
+
+
+                // ADD CARD
+
+                newsList.appendChild(
+                    card
+                );
+
+
+            });
+
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            status.textContent =
+                "❌ Failed to load news.";
+
+
+        }
+
+    }
+
+
+
+    // ============================
+    // DELETE NEWS
+    // ============================
+
+    async function deleteNews(newsId) {
+
+
+        const confirmDelete =
+            confirm(
+                "Are you sure you want to delete this news?"
+            );
+
+
+        if (!confirmDelete) {
+
+            return;
+
+        }
+
+
+        try {
+
+
+            await deleteDoc(
+                doc(
+                    db,
+                    "news",
+                    newsId
+                )
+            );
+
+
+            alert(
+                "✅ News deleted successfully."
+            );
+
+
+            loadNews();
+
+
+        } catch (error) {
+
+
+            console.error(error);
+
+
+            alert(
+                "❌ Failed to delete news."
+            );
+
+
+        }
+
+    }
+
+
+</script>
+
+
+</body>
+
+</html>
