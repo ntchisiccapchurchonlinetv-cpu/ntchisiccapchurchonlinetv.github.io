@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Manage Videos - NTCHISI CCAP ONLINE TV</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+}
+
+header {
+    background: #075e54;
+    color: white;
+    text-align: center;
+    padding: 22px 15px;
+}
+
+.container {
+    width: 92%;
+    max-width: 850px;
+    margin: 25px auto;
+}
+
+.top {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.top a {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    background: #075e54;
+    color: white;
+    text-decoration: none;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+.box {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 13px;
+    margin-top: 7px;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    font-size: 16px;
+}
+
+textarea {
+    min-height: 100px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 7px;
+    background: #075e54;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.cancel {
+    background: #777;
+}
+
+.video-card {
+    background: white;
+    padding: 18px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.video-card h2 {
+    color: #075e54;
+}
+
+.video-card video {
+    width: 100%;
+    max-height: 400px;
+    background: #000;
+    border-radius: 8px;
+}
+
+.video-card .edit {
+    background: #1565c0;
+}
+
+.video-card .delete {
+    background: #c62828;
+}
+
+#message,
+#status {
+    text-align: center;
+    font-weight: bold;
+    margin: 15px 0;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎥 Manage Videos</h1>
+    <p>NTCHISI CCAP ONLINE TV</p>
+</header>
+
+<div class="container">
+
+    <div class="top">
+        <a href="dashboard.html">← Dashboard</a>
+
+        <a href="videos.html">
+            🎥 View Videos
+        </a>
+    </div>
+
+
+    <!-- ADD VIDEO -->
+
+    <div class="box">
+
+        <h2 id="formTitle">
+            ➕ Add Recorded Video
+        </h2>
+
+        <form id="videoForm">
+
+            <label>
+                🎬 Video Title
+            </label>
+
+            <input
+                type="text"
+                id="title"
+                placeholder="Enter video title"
+                required
+            >
+
+
+            <label>
+                📝 Description
+            </label>
+
+            <textarea
+                id="description"
+                placeholder="Enter video description">
+            </textarea>
+
+
+            <label>
+                🖼️ Thumbnail URL
+            </label>
+
+            <input
+                type="url"
+                id="thumbnailUrl"
+                placeholder="https://example.com/image.jpg"
+            >
+
+
+            <label>
+                🎥 Video URL
+            </label>
+
+            <input
+                type="url"
+                id="videoUrl"
+                placeholder="https://example.com/video.mp4"
+                required
+            >
+
+
+            <button
+                type="submit"
+                id="saveButton">
+
+                💾 Save Video
+
+            </button>
+
+
+            <button
+                type="button"
+                class="cancel"
+                id="cancelButton"
+                style="display:none;">
+
+                Cancel Edit
+
+            </button>
+
+        </form>
+
+        <p id="message"></p>
+
+    </div>
+
+
+    <!-- VIDEO LIST -->
+
+    <div class="box">
+
+        <h2>
+            🎥 Uploaded Videos
+        </h2>
+
+        <p id="status">
+            Loading videos...
+        </p>
+
+        <div id="videoList"></div>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getAuth,
+    onAuthStateChanged
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    deleteDoc,
+    updateDoc,
+    doc,
+    serverTimestamp
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+    apiKey:
+    "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+
+    authDomain:
+    "ntchisi-ccap-church-online-tv.firebaseapp.com",
+
+    projectId:
+    "ntchisi-ccap-church-online-tv",
+
+    storageBucket:
+    "ntchisi-ccap-church-online-tv.firebasestorage.app",
+
+    messagingSenderId:
+    "432495723011",
+
+    appId:
+    "1:432495723011:web:9ad91aa93e2f44a8e28436",
+
+    measurementId:
+    "G-69WSZSCK2P"
+};
+
+
+const app =
+    initializeApp(firebaseConfig);
+
+const auth =
+    getAuth(app);
+
+const db =
+    getFirestore(app);
+
+
+const videoForm =
+    document.getElementById("videoForm");
+
+const titleInput =
+    document.getElementById("title");
+
+const descriptionInput =
+    document.getElementById("description");
+
+const thumbnailInput =
+    document.getElementById("thumbnailUrl");
+
+const videoUrlInput =
+    document.getElementById("videoUrl");
+
+const saveButton =
+    document.getElementById("saveButton");
+
+const cancelButton =
+    document.getElementById("cancelButton");
+
+const message =
+    document.getElementById("message");
+
+const videoList =
+    document.getElementById("videoList");
+
+const status =
+    document.getElementById("status");
+
+const formTitle =
+    document.getElementById("formTitle");
+
+
+let editingId = null;
+
+
+// CHECK LOGIN
+
+onAuthStateChanged(auth, (user) => {
+
+    if (!user) {
+
+        window.location.href =
+            "admin.html";
+
+    } else {
+
+        loadVideos();
+
+    }
+
+});
+
+
+// LOAD VIDEOS
+
+async function loadVideos() {
+
+    try {
+
+        const snapshot =
+            await getDocs(
+                collection(db, "videos")
+            );
+
+        videoList.innerHTML = "";
+
+        if (snapshot.empty) {
+
+            status.textContent =
+                "🎥 No recorded videos yet.";
+
+            return;
+        }
+
+        status.textContent = "";
+
+
+        snapshot.forEach((videoDoc) => {
+
+            const video =
+                videoDoc.data();
+
+
+            const card =
+                document.createElement("div");
+
+            card.className =
+                "video-card";
+
+
+            const title =
+                document.createElement("h2");
+
+            title.textContent =
+                video.title ||
+                "Untitled Video";
+
+            card.appendChild(title);
+
+
+            if (video.thumbnailUrl) {
+
+                const image =
+                    document.createElement("img");
+
+                image.src =
+                    video.thumbnailUrl;
+
+                image.style.width =
+                    "100%";
+
+                image.style.maxHeight =
+                    "300px";
+
+                image.style.objectFit =
+                    "cover";
+
+                image.style.borderRadius =
+                    "8px";
+
+                card.appendChild(image);
+
+            }
+
+
+            if (video.description) {
+
+                const description =
+                    document.createElement("p");
+
+                description.textContent =
+                    video.description;
+
+                card.appendChild(description);
+
+            }
+
+
+            if (video.videoUrl) {
+
+                const player =
+                    document.createElement("video");
+
+                player.controls = true;
+
+                player.preload =
+                    "metadata";
+
+                player.src =
+                    video.videoUrl;
+
+                card.appendChild(player);
+
+            }
+
+
+            const editButton =
+                document.createElement("button");
+
+            editButton.className =
+                "edit";
+
+            editButton.textContent =
+                "✏️ Edit Video";
+
+
+            editButton.onclick =
+                () => {
+
+                    startEdit(
+                        videoDoc.id,
+                        video
+                    );
+
+                };
+
+
+            const deleteButton =
+                document.createElement("button");
+
+            deleteButton.className =
+                "delete";
+
+            deleteButton.textContent =
+                "🗑️ Delete Video";
+
+
+            deleteButton.onclick =
+                () => {
+
+                    deleteVideo(
+                        videoDoc.id
+                    );
+
+                };
+
+
+            card.appendChild(
+                editButton
+            );
+
+            card.appendChild(
+                deleteButton
+            );
+
+
+            videoList.appendChild(card);
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "❌ Failed to load videos.";
+
+    }
+
+}
+
+
+// ADD / UPDATE VIDEO
+
+videoForm.addEventListener(
+    "submit",
+    async (event) => {
+
+        event.preventDefault();
+
+
+        const title =
+            titleInput.value.trim();
+
+        const description =
+            descriptionInput.value.trim();
+
+        const thumbnailUrl =
+            thumbnailInput.value.trim();
+
+        const videoUrl =
+            videoUrlInput.value.trim();
+
+
+        if (!title || !videoUrl) {
+
+            message.textContent =
+                "❌ Title and Video URL are required.";
+
+            message.style.color =
+                "red";
+
+            return;
+
+        }
+
+
+        saveButton.disabled =
+            true;
+
+        message.textContent =
+            "Saving...";
+
+        message.style.color =
+            "#075e54";
+
+
+        try {
+
+            if (editingId) {
+
+                await updateDoc(
+                    doc(
+                        db,
+                        "videos",
+                        editingId
+                    ),
+                    {
+                        title,
+                        description,
+                        thumbnailUrl,
+                        videoUrl,
+                        updatedAt:
+                            serverTimestamp()
+                    }
+                );
+
+                message.textContent =
+                    "✅ Video updated successfully!";
+
+            } else {
+
+                await addDoc(
+                    collection(db, "videos"),
+                    {
+                        title,
+                        description,
+                        thumbnailUrl,
+                        videoUrl,
+                        createdAt:
+                            serverTimestamp()
+                    }
+                );
+
+                message.textContent =
+                    "✅ Video added successfully!";
+
+            }
+
+
+            message.style.color =
+                "green";
+
+
+            resetForm();
+
+            loadVideos();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            message.textContent =
+                "❌ Failed to save video.";
+
+            message.style.color =
+                "red";
+
+        }
+
+
+        saveButton.disabled =
+            false;
+
+    }
+);
+
+
+// START EDIT
+
+function startEdit(id, video) {
+
+    editingId = id;
+
+    formTitle.textContent =
+        "✏️ Edit Video";
+
+    titleInput.value =
+        video.title || "";
+
+    descriptionInput.value =
+        video.description || "";
+
+    thumbnailInput.value =
+        video.thumbnailUrl || "";
+
+    videoUrlInput.value =
+        video.videoUrl || "";
+
+    saveButton.textContent =
+        "💾 Update Video";
+
+    cancelButton.style.display =
+        "block";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+// CANCEL EDIT
+
+cancelButton.addEventListener(
+    "click",
+    resetForm
+);
+
+
+function resetForm() {
+
+    editingId = null;
+
+    videoForm.reset();
+
+    formTitle.textContent =
+        "➕ Add Recorded Video";
+
+    saveButton.textContent =
+        "💾 Save Video";
+
+    cancelButton.style.display =
+        "none";
+
+}
+
+
+// DELETE VIDEO
+
+async function deleteVideo(id) {
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to delete this video?"
+        );
+
+
+    if (!confirmed) return;
+
+
+    try {
+
+        await deleteDoc(
+            doc(
+                db,
+                "videos",
+                id
+            )
+        );
+
+
+        alert(
+            "✅ Video deleted successfully!"
+        );
+
+
+        loadVideos();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "❌ Failed to delete video."
+        );
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
