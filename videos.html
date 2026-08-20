@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Videos - NTCHISI CCAP ONLINE TV</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+}
+
+header {
+    background: #075e54;
+    text-align: center;
+    padding: 22px 15px;
+}
+
+header h1 {
+    margin: 0;
+}
+
+.container {
+    width: 94%;
+    max-width: 900px;
+    margin: 25px auto;
+}
+
+.video-card {
+    background: white;
+    color: #222;
+    padding: 18px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.video-card h2 {
+    color: #075e54;
+    margin-top: 0;
+}
+
+.video-card p {
+    line-height: 1.6;
+}
+
+.thumbnail {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+video {
+    width: 100%;
+    max-height: 500px;
+    background: #000;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.date {
+    color: #777;
+    font-size: 14px;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px 10px;
+}
+
+.back {
+    display: inline-block;
+    background: #075e54;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 7px;
+    margin-bottom: 25px;
+}
+
+.empty {
+    text-align: center;
+    padding: 40px 15px;
+    background: #222;
+    border-radius: 10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>🎥 NTCHISI CCAP ONLINE TV</h1>
+
+<p>Recorded Videos</p>
+
+</header>
+
+
+<div class="container">
+
+<a href="index.html" class="back">
+🏠 Back to Home
+</a>
+
+
+<div id="loading" class="loading">
+
+⏳ Loading videos...
+
+</div>
+
+
+<div id="videoList"></div>
+
+
+</div>
+
+
+<script type="module">
+
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+import {
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    orderBy
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+    apiKey:
+    "AIzaSyAXr0D8iffLsa1FuwF4Xjw8i3KlKqvZsVc",
+
+    authDomain:
+    "ntchisi-ccap-church-online-tv.firebaseapp.com",
+
+    projectId:
+    "ntchisi-ccap-church-online-tv",
+
+    storageBucket:
+    "ntchisi-ccap-church-online-tv.firebasestorage.app",
+
+    messagingSenderId:
+    "432495723011",
+
+    appId:
+    "1:432495723011:web:9ad91aa93e2f44a8e28436",
+
+    measurementId:
+    "G-69WSZSCK2P"
+
+};
+
+
+const app =
+initializeApp(firebaseConfig);
+
+const db =
+getFirestore(app);
+
+
+const videoList =
+document.getElementById("videoList");
+
+const loading =
+document.getElementById("loading");
+
+
+async function loadVideos() {
+
+    try {
+
+        const videosQuery =
+            query(
+                collection(db, "videos"),
+                orderBy("createdAt", "desc")
+            );
+
+
+        const snapshot =
+            await getDocs(videosQuery);
+
+
+        loading.style.display =
+            "none";
+
+
+        if (snapshot.empty) {
+
+            videoList.innerHTML = `
+                <div class="empty">
+                    <h2>🎥 No Videos Available</h2>
+                    <p>
+                        There are currently no recorded
+                        videos available.
+                    </p>
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        snapshot.forEach((videoDoc) => {
+
+            const video =
+                videoDoc.data();
+
+
+            const card =
+                document.createElement("div");
+
+            card.className =
+                "video-card";
+
+
+            // THUMBNAIL
+
+            if (video.thumbnailUrl) {
+
+                const image =
+                    document.createElement("img");
+
+                image.className =
+                    "thumbnail";
+
+                image.src =
+                    video.thumbnailUrl;
+
+                image.alt =
+                    video.title ||
+                    "Video";
+
+                card.appendChild(image);
+
+            }
+
+
+            // TITLE
+
+            const title =
+                document.createElement("h2");
+
+            title.textContent =
+                video.title ||
+                "Untitled Video";
+
+            card.appendChild(title);
+
+
+            // DESCRIPTION
+
+            if (video.description) {
+
+                const description =
+                    document.createElement("p");
+
+                description.textContent =
+                    video.description;
+
+                card.appendChild(description);
+
+            }
+
+
+            // VIDEO
+
+            if (video.videoUrl) {
+
+                const player =
+                    document.createElement("video");
+
+                player.controls = true;
+
+                player.preload =
+                    "metadata";
+
+                player.playsInline =
+                    true;
+
+                player.src =
+                    video.videoUrl;
+
+
+                player.addEventListener(
+                    "error",
+                    () => {
+
+                        player.insertAdjacentHTML(
+                            "afterend",
+                            "<p>❌ This video cannot be played.</p>"
+                        );
+
+                    }
+                );
+
+
+                card.appendChild(player);
+
+            }
+
+
+            videoList.appendChild(card);
+
+        });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        loading.style.display =
+            "none";
+
+
+        videoList.innerHTML = `
+            <div class="empty">
+                <h2>❌ Unable to Load Videos</h2>
+                <p>
+                    Please try again later.
+                </p>
+            </div>
+        `;
+
+    }
+
+}
+
+
+loadVideos();
+
+</script>
+
+</body>
+
+</html>
